@@ -27,12 +27,10 @@ Experimental Design:
     - https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/T9VMJO
     - Also helpful for sourcing data: https://davesredistricting.org/maps#aboutdata \
 
-The first step of this process if to find and aggregate official election results by precinct from both 2008 and 2012. Unfortunately, there exists no centralized data set for either of these elections, so we must acquire them on an individual basis and then clean and merge them.\
+The first step of this process is to find and aggregate official election results by precinct from both 2008 and 2012. Unfortunately, there exists no centralized data set for either of these elections, so we must acquire them on an individual basis and then clean and merge them.
 
 #Precinct-Level Election Returns
 ```{r}
-setwd("/Users/jackholland/Downloads/School/GOV51/Final Project")
-
 #NEW YORK
 ny_2008 <- read.csv("NY_2008.csv")
 ny_2012 <- read.csv("NY_2012.csv")
@@ -46,8 +44,6 @@ ct_2012 <- read.csv("CT_2012.csv")
 
 #Demographic data by block
 ```{r}
-setwd("/Users/jackholland/Downloads/School/GOV51/Final Project")
-
 #NEW YORK
 
 #CONNECTICUT
