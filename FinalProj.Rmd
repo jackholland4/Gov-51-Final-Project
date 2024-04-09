@@ -65,12 +65,8 @@ merged_CT <- merge(ct_2008, ct_2012, by = c("town", "party"), all = TRUE)
 
 #Demographic data by block
 ```{r}
-#NEW YORK
-
 #CONNECTICUT
 ct_cvap_2010 <- read.csv("ct_cvap_2010.csv")
 
-
-#NEW JERSEY
 ```
 
