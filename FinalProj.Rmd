@@ -6,7 +6,7 @@ output:
 
 The Effect of Natural Disasters on Incumbent Support
 ---
-*Authored by Jack Holland, Jenny Lu, and Menemsha Solomon*
+*Authored by Jack Holland, Jenny Le, and Menemsha Solomon*
 
 Research Question: How does a natural disaster affect candidate performance?
 ---
