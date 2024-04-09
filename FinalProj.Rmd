@@ -31,15 +31,36 @@ The first step of this process is to find and aggregate official election result
 
 #Precinct-Level Election Returns
 ```{r}
-#NEW YORK
-ny_2008 <- read.csv("NY_2008.csv")
-ny_2012 <- read.csv("NY_2012.csv")
-
 #CONNECTICUT
-ct_2008 <- read.csv("CT_2008.csv")
-ct_2012 <- read.csv("CT_2012.csv")
+ct_2008 <- read.csv("20081104__ct__general__town.csv")
+ct_2012 <- read.csv("20121106__ct__general__precinct.csv")
 
-#NEW JERSEY
+##Cleaning 2008 data
+ct_2008 <- subset(ct_2008, office == "President")
+ct_2008 <- subset(ct_2008, candidate == "Barack Obama" | candidate == "John McCain")
+ct_2008 <- subset(ct_2008, county != "Total")
+ct_2008 <- ct_2008[, c(2, 3, 5, 6, 7)]
+ct_2008$party <- ifelse(ct_2008$party == "Dem", "DEM", "REP")
+
+##Cleaning 2012 data
+ct_2012 <- subset(ct_2012, office == "President")
+ct_2012 <- subset(ct_2012, candidate == "Barack Obama" | candidate == "Mitt Romney")
+ct_2012 <- aggregate(votes ~ town + candidate + party + office, data = ct_2012, sum)
+
+##Cleaning original data so the merge is seamless
+ct_2012$town <- ifelse(ct_2012$town == "BeaconFalls", "Beacon Falls", ct_2012$town)
+ct_2012$town <- ifelse(ct_2012$town == "DeepRiver", "Deep River", ct_2012$town)
+ct_2012$town <- ifelse(ct_2012$town == "EastHaddam", "East Haddam", ct_2012$town)
+ct_2012$town <- ifelse(ct_2012$town == "EastHampton", "East Hampton", ct_2012$town)
+ct_2008$town <- ifelse(ct_2008$town == "Litchfeld", "Litchfield", ct_2008$town)
+ct_2012$town <- ifelse(ct_2012$town == "Meridien", "Meriden", ct_2012$town)
+ct_2008$town <- ifelse(ct_2008$town == "New Mil!ford", "New Milford", ct_2008$town)
+ct_2012$town <- ifelse(ct_2012$town == "NorthCanaan", "North Canaan", ct_2012$town)
+ct_2012$town <- ifelse(ct_2012$town == "NorthStonington", "North Stonington", ct_2012$town)
+ct_2012$town <- ifelse(ct_2012$town == "OldLyme", "Old Lyme", ct_2012$town)
+
+##Merging
+merged_CT <- merge(ct_2008, ct_2012, by = c("town", "party"), all = TRUE)
 ```
 
 #Demographic data by block
