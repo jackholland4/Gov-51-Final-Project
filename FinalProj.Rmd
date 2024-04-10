@@ -58,10 +58,54 @@ ct_2008$town <- ifelse(ct_2008$town == "New Mil!ford", "New Milford", ct_2008$to
 ct_2012$town <- ifelse(ct_2012$town == "NorthCanaan", "North Canaan", ct_2012$town)
 ct_2012$town <- ifelse(ct_2012$town == "NorthStonington", "North Stonington", ct_2012$town)
 ct_2012$town <- ifelse(ct_2012$town == "OldLyme", "Old Lyme", ct_2012$town)
+```
+
+```{r}
+##combining rows with same town name
+library(tidyverse)
+ct2012 <- ct_2012 |>
+  group_by(town) %>%
+  mutate(row_id = row_number()) %>%
+  pivot_wider(names_from = row_id, values_from = c(candidate, party, office, votes), names_prefix = "Row", values_fill = NULL) %>%
+  ungroup() 
+
+ct2012 <- ct2012 |>
+  rename("2012_dem_candidate" = candidate_Row1,
+         "2012_rep_candidate" = candidate_Row2,
+         "2012_dem_votes" = votes_Row1,
+         "2012_rep_votes" = votes_Row2) |>
+  select(town, "2012_dem_candidate", "2012_dem_votes", "2012_rep_candidate", "2012_rep_votes") |>
+  mutate(`2012_total` = `2012_dem_votes` + `2012_rep_votes`) |>
+  mutate(`2012_repvoteshare` = `2012_rep_votes` / `2012_total`) |>
+  mutate(`2012_demvoteshare` = `2012_dem_votes` / `2012_total`) 
+
+ct2008 <- ct_2008 |>
+  group_by(town) %>%
+  mutate(row_id = row_number()) %>%
+  pivot_wider(names_from = row_id, values_from = c(candidate, party, office, votes), names_prefix = "Row", values_fill = NULL) %>%
+  ungroup() 
+
+ct2008 <- ct2008 |>
+  rename("2008_dem_candidate" = candidate_Row1,
+         "2008_rep_candidate" = candidate_Row2,
+         "2008_dem_votes" = votes_Row1,
+         "2008_rep_votes" = votes_Row2) |>
+  select(town, "2008_dem_candidate", "2008_dem_votes", "2008_rep_candidate", "2008_rep_votes") |>
+  mutate(`2008_total` = `2008_dem_votes` + `2008_rep_votes`) |>
+  mutate(`2008_repvoteshare` = `2008_rep_votes` / `2008_total`) |>
+  mutate(`2008_demvoteshare` = `2008_dem_votes` / `2008_total`) 
 
 ##Merging
-merged_CT <- merge(ct_2008, ct_2012, by = c("town", "party"), all = TRUE)
+merged_CT <- merge(ct2008, ct2012, by = c("town"), all = TRUE) |>
+  mutate(dif_rep_voteshare = `2012_repvoteshare` - `2008_repvoteshare`)|>
+  mutate(dif_dem_voteshare = `2012_demvoteshare` - `2008_demvoteshare`) |>
+  mutate(votedif = `2012_total` - `2008_total`)
+
+##create a table with only variables of interest, voteshare difference from 2008 to 2012
+CT_votes <- merged_CT |>
+  select(town, dif_rep_voteshare, dif_dem_voteshare, votedif)
 ```
+
 
 #Demographic data by block
 ```{r}
