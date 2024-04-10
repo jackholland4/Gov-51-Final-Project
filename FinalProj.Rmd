@@ -64,9 +64,9 @@ ct_2012$town <- ifelse(ct_2012$town == "OldLyme", "Old Lyme", ct_2012$town)
 ##combining rows with same town name
 library(tidyverse)
 ct2012 <- ct_2012 |>
-  group_by(town) %>%
-  mutate(row_id = row_number()) %>%
-  pivot_wider(names_from = row_id, values_from = c(candidate, party, office, votes), names_prefix = "Row", values_fill = NULL) %>%
+  group_by(town) |>
+  mutate(row_id = row_number()) |>
+  pivot_wider(names_from = row_id, values_from = c(candidate, party, office, votes), names_prefix = "Row", values_fill = NULL) |>
   ungroup() 
 
 ct2012 <- ct2012 |>
@@ -107,9 +107,8 @@ CT_votes <- merged_CT |>
 ```
 
 ```{r}
-write.table(CT_votes, file = "votesdata2.csv")
-```
 
+```
 
 #Demographic data by block
 ```{r}
