@@ -99,7 +99,7 @@ ct2008 <- ct2008 |>
 merged_CT <- merge(ct2008, ct2012, by = c("town"), all = TRUE) |>
   mutate(dif_rep_voteshare = `2012_repvoteshare` - `2008_repvoteshare`)|>
   mutate(dif_dem_voteshare = `2012_demvoteshare` - `2008_demvoteshare`) |>
-  mutate(votedif = `2012_total` - `2008_total`)
+  mutate(votedif = (`2012_total` - `2008_total`)/`2008_total`)
 
 ##Create a table with only variables of interest, voteshare difference from 2008 to 2012
 CT_votes <- merged_CT |>
