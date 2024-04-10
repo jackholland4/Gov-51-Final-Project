@@ -80,9 +80,9 @@ ct2012 <- ct2012 |>
   mutate(`2012_demvoteshare` = `2012_dem_votes` / `2012_total`) 
 
 ct2008 <- ct_2008 |>
-  group_by(town) %>%
-  mutate(row_id = row_number()) %>%
-  pivot_wider(names_from = row_id, values_from = c(candidate, party, office, votes), names_prefix = "Row", values_fill = NULL) %>%
+  group_by(town) |>
+  mutate(row_id = row_number()) |>
+  pivot_wider(names_from = row_id, values_from = c(candidate, party, office, votes), names_prefix = "Row", values_fill = NULL) |>
   ungroup() 
 
 ct2008 <- ct2008 |>
