@@ -106,6 +106,10 @@ CT_votes <- merged_CT |>
   select(town, dif_rep_voteshare, dif_dem_voteshare, votedif)
 ```
 
+```{r}
+write.table(CT_votes, file = "votesdata2.csv")
+```
+
 
 #Demographic data by block
 ```{r}
