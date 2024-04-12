@@ -107,26 +107,45 @@ merged_CT <- merge(ct2008, ct2012, by = c("town"), all = TRUE) |>
 CT_votes <- merged_CT |>
   select(town, rep_vote_percent_diff, dem_vote_percent_diff, votedif)
 
+##List of coastal towns
 coastal_towns <- c("Bridgeport", "Darien", "Fairfield", "Greenwich", "Norwalk", "Stamford", 
                    "Stratford", "Westport", "Branford", "East Haven", "Guilford", "Madison", 
                    "Milford", "New Haven", "West Haven", "Clinton", "Old Saybrook", "Westbrook", 
                    "East Lyme", "Groton", "New London", "Stonington", "Waterford")
 
-CT_votes$IsCoastal <- ifelse(CT_votes$town %in% coastal_towns, "Coastal", "Non-Coastal")
+##Creating column for coastal towns
+CT_votes$Location <- ifelse(CT_votes$town %in% coastal_towns, "Coastal", "Non-Coastal")
 ```
 
 ```{r}
+##Plot for voteshare
 ggplot(CT_votes, aes(x = rep_vote_percent_diff, y = dem_vote_percent_diff, label = town)) +
-  geom_point(aes(color = IsCoastal, alpha = IsCoastal), size = 3) +
-  scale_color_manual(values = c("Coastal" = "blue", "Non-Coastal" = "grey")) +
-  xlim(-1.3, 0.9) +  # Set x-axis limits
-  ylim(-1.5, 7)  +  # Set y-axis limits
-  scale_alpha_manual(values = c("Coastal" = 1, "Non-Coastal" = 0.5)) +  # Adjust transparency level
-  geom_text(aes(label = town), hjust = 1.1, vjust = 1.1, check_overlap = TRUE, size = 3) +
+  geom_point(aes(color = Location, alpha = Location), size = 3) +
+  scale_color_manual(values = c("Coastal" = "blue", "Non-Coastal" = "orange")) + ##make non-coastal translucent
+  xlim(-1.15, 0.6) + ##adjusting axis parameters so dots fit better
+  ylim(-0.5, 7) +
+  scale_alpha_manual(values = c("Coastal" = 1, "Non-Coastal" = 0.3)) +
+  geom_text(aes(label = town), hjust = 1.1, vjust = 1.1, check_overlap = TRUE, size = 3) + ##label some times w/o overlap
+  labs(
+    x = "Difference in Republican Vote Share",
+    y = "Difference in Democratic Vote Share",
+    title = "Vote Share Differences in Towns Across Connecticut (2008 to 2012)"
+  ) +
+  theme(
+    plot.title = element_text(size = 13),
+    axis.title = element_text(size = 13)
+  )
+```
+```{r}
+##Plot for vote cast differences
+ggplot(CT_votes, aes(x = factor(1), y = votedif, fill = Location)) +
+  geom_jitter(width = 0.1, size = 3, shape = 21, color = "black", alpha = 0.6) +
+  scale_fill_manual(values = c("Coastal" = "blue", "Non-Coastal" = "orange")) +
+  labs(x = "Difference in Votes Cast", y = "Vote Cast Differences", title = "Vote Cast Difference in Towns Across Connecticut (2008 to 2012)") +
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
+  xlab(NULL) # Remove x-axis label
 
-  labs(x = "Difference in Republican Vote Share", 
-       y = "Difference in Democratic Vote Share", 
-       title = "Difference in Vote Share by Town in Connecticut") 
 ```
 
 
