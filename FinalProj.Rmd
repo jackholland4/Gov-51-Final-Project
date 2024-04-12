@@ -63,7 +63,7 @@ ct_2012$town <- ifelse(ct_2012$town == "OldLyme", "Old Lyme", ct_2012$town)
 ```{r}
 ##combining rows with same town name
 library(tidyverse)
-ct2012 <- ct_2012 |>
+ct2012<- ct_2012 |>
   group_by(town) |>
   mutate(row_id = row_number()) |>
   pivot_wider(names_from = row_id, values_from = c(candidate, party, office, votes), names_prefix = "Row", values_fill = NULL) |>
@@ -99,11 +99,34 @@ ct2008 <- ct2008 |>
 merged_CT <- merge(ct2008, ct2012, by = c("town"), all = TRUE) |>
   mutate(dif_rep_voteshare = `2012_repvoteshare` - `2008_repvoteshare`)|>
   mutate(dif_dem_voteshare = `2012_demvoteshare` - `2008_demvoteshare`) |>
+  mutate(rep_vote_percent_diff = (`2012_rep_votes` - `2008_rep_votes`)/`2008_rep_votes`) |>
+  mutate(dem_vote_percent_diff = (`2012_dem_votes` - `2008_dem_votes`)/`2008_dem_votes`) |>
   mutate(votedif = (`2012_total` - `2008_total`)/`2008_total`)
 
 ##Create a table with only variables of interest, voteshare difference from 2008 to 2012
 CT_votes <- merged_CT |>
-  select(town, dif_rep_voteshare, dif_dem_voteshare, votedif)
+  select(town, rep_vote_percent_diff, dem_vote_percent_diff, votedif)
+
+coastal_towns <- c("Bridgeport", "Darien", "Fairfield", "Greenwich", "Norwalk", "Stamford", 
+                   "Stratford", "Westport", "Branford", "East Haven", "Guilford", "Madison", 
+                   "Milford", "New Haven", "West Haven", "Clinton", "Old Saybrook", "Westbrook", 
+                   "East Lyme", "Groton", "New London", "Stonington", "Waterford")
+
+CT_votes$IsCoastal <- ifelse(CT_votes$town %in% coastal_towns, "Coastal", "Non-Coastal")
+```
+
+```{r}
+ggplot(CT_votes, aes(x = rep_vote_percent_diff, y = dem_vote_percent_diff, label = town)) +
+  geom_point(aes(color = IsCoastal, alpha = IsCoastal), size = 3) +
+  scale_color_manual(values = c("Coastal" = "blue", "Non-Coastal" = "grey")) +
+  xlim(-1.3, 0.9) +  # Set x-axis limits
+  ylim(-1.5, 7)  +  # Set y-axis limits
+  scale_alpha_manual(values = c("Coastal" = 1, "Non-Coastal" = 0.5)) +  # Adjust transparency level
+  geom_text(aes(label = town), hjust = 1.1, vjust = 1.1, check_overlap = TRUE, size = 3) +
+
+  labs(x = "Difference in Republican Vote Share", 
+       y = "Difference in Democratic Vote Share", 
+       title = "Difference in Vote Share by Town in Connecticut") 
 ```
 
 
