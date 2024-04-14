@@ -158,13 +158,23 @@ census <- read.csv("ct_cvap_2010.csv")
 
 census <- census 
 
-damage <- read.csv("FemaDamageAssessmnts_01172013_new_8825820061294884462.csv")
 
+damage <- read.csv("FemaDamageAssessmnts_01172013_new_8825820061294884462.csv")
 damage <- damage |>
-  rename(GEOID = `X2010.Census.Block.Group.ID`) |>
+  rename(GEOID = X2010.Census.Block.Group.ID) |>
   filter(str_sub(GEOID, 1, 2) == "09") 
 
+damage <- damage |>
+  mutate(GEOID = as.numeric(GEOID))
 
+census_damage <- merge(damage, census, by = "GEOID")
+
+geoid_zcta5 <- read.csv("CT_ZCTA5_GEOID.csv")
+
+geoid_zcta5 <- geoid_zcta5 |>
+  select(ZCTA5, GEOID)
+
+census_damage_zcta5 <- merge(geoid_zcta5, census_damage, by = "GEOID", all = TRUE)
 
 zcta5_town <- read.csv("ZCTA_CT_7124349094171390284.csv")
 ```
