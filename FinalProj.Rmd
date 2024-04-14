@@ -148,10 +148,6 @@ ggplot(CT_votes, aes(x = factor(1), y = votedif, fill = Location)) +
 
 ```
 
-#Loading block data
-
-
-
 
 ```{r}
 library(stringr)
