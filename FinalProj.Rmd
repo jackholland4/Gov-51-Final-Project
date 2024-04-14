@@ -148,11 +148,28 @@ ggplot(CT_votes, aes(x = factor(1), y = votedif, fill = Location)) +
 
 ```
 
-
-#Demographic data by block
+#Loading block data
 ```{r}
-#CONNECTICUT
-ct_cvap_2010 <- read.csv("ct_cvap_2010.csv")
+library(stringr)
+library(tidyverse)
+library(dplyr)
 
+census <- read.csv("ct_cvap_2010.csv") 
+
+census <- census 
+
+damage <- read.csv("FemaDamageAssessmnts_01172013_new_8825820061294884462.csv")
+
+damage <- damage |>
+  rename(GEOID = `X2010.Census.Block.Group.ID`) |>
+  filter(str_sub(GEOID, 1, 2) == "09") 
+
+
+
+zcta5_town <- read.csv("ZCTA_CT_7124349094171390284.csv")
 ```
+
+
+
+
 
