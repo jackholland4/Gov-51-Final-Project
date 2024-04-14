@@ -149,36 +149,21 @@ ggplot(CT_votes, aes(x = factor(1), y = votedif, fill = Location)) +
 ```
 
 #Loading block data
+
+
+
+
 ```{r}
 library(stringr)
 library(tidyverse)
 library(dplyr)
 
-census <- read.csv("ct_cvap_2010.csv") 
-
-census <- census 
-
-damage <- read.csv("FemaDamageAssessmnts_01172013_new_8825820061294884462.csv")
-damage <- damage |>
-  rename(GEOID = X2010.Census.Block.Group.ID) |>
-  filter(str_sub(GEOID, 1, 2) == "09") 
-
-damage <- damage |>
-  mutate(GEOID = as.numeric(GEOID))
-
-census_damage <- merge(damage, census, by = "GEOID", all = TRUE)
-
-census_damage <- census_damage |>
-  mutate(GEOID = str_sub(as.character(GEOID), 1, 10)) |>
-  mutate(GEOID = as.numeric(GEOID))
-
+##load and clean GEOID, ZCTA, and Town data
 
 geoid_zcta5 <- read.csv("CT_ZCTA5_GEOID.csv")
 
 geoid_zcta5 <- geoid_zcta5 |>
   select(ZCTA5, GEOID)
-
-census_damage_zcta5 <- merge(geoid_zcta5, census_damage, by = "GEOID", all = TRUE)
 
 zcta5_town <- read.csv("ZCTA_CT_7124349094171390284.csv")
 
@@ -186,24 +171,50 @@ zcta5_town <- zcta5_town |>
   rename(ZCTA5 = ZCTA5CE10) |>
   select(ZCTA5, Town)
 
+##put census data in terms of town
+census <- read.csv("ct_cvap_2010.csv") 
+census2 <- census |>
+  mutate(GEOID = str_sub(as.character(GEOID), 1, 10)) |>
+  mutate(GEOID = as.numeric(GEOID))
 
+census_geoid <- merge(census2, geoid_zcta5, by = "GEOID")
 
-census_damage_zcta5_town <- merge(zcta5_town, census_damage_zcta5, by = "ZCTA5", all = TRUE)
+census_zcta5 <- merge(zcta5_town, census_geoid, by = "ZCTA5")
 
-census_damage_zcta5_town <- census_damage_zcta5_town |>
-  select(Town, Total.Damaged..any.type., Total.Housing.Units, 
-         CVAP_TOT10, CVAP_NHS10, CVAP_AIA10, CVAP_ASN10, CVAP_BLK10, CVAP_NHP10, CVAP_WHT10, CVAP_AIW10,
+census_zcta5 <- census_zcta5 |>
+  select(Town, CVAP_TOT10, CVAP_NHS10, CVAP_AIA10, CVAP_ASN10, CVAP_BLK10, CVAP_NHP10, CVAP_WHT10, CVAP_AIW10,
          CVAP_ASW10, CVAP_BLW10, CVAP_AIB10) 
 
-treatmentdata <- aggregate(.~ Town, data = census_damage_zcta5_town, sum)
+census_town_data <- aggregate(.~ Town, data = census_zcta5, sum)
 
-treatmentdata <- treatmentdata |>
+##put damage data in terms of town
+damage <- read.csv("FemaDamageAssessmnts_01172013_new_8825820061294884462.csv")
+damage <- damage |>
+  rename(GEOID = X2010.Census.Block.Group.ID) |>
+  filter(str_sub(GEOID, 1, 2) == "09") 
+
+damage <- damage |>
+  mutate(GEOID = as.numeric(GEOID)) |>
+  mutate(GEOID = str_sub(as.character(GEOID), 1, 10)) |>
+  mutate(GEOID = as.numeric(GEOID))
+
+damage_geoid <- merge(damage, geoid_zcta5, by = "GEOID")
+
+damage_zcta5 <- merge(zcta5_town, damage_geoid, by = "ZCTA5")
+
+damage_zcta5 <- damage_zcta5 |>
+  select(Town, Total.Damaged..any.type., Total.Housing.Units) 
+
+damage_town_data <- aggregate(.~ Town, data = damage_zcta5, sum)
+
+## combine census and damage data 
+town_data <- merge(census_town_data, damage_town_data, by = "Town", all = TRUE)
+
+town_data <- town_data |>
   rename(town = Town)
 
-finaldata <- merge(CT_votes, treatmentdata, by = "town", all = TRUE)
+##combine census, damage, and voting data
+finaldata <- merge(CT_votes, town_data, by = "town", all = TRUE)
 ```
-
-
-
 
 
