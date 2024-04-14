@@ -63,7 +63,7 @@ ct_2012$town <- ifelse(ct_2012$town == "OldLyme", "Old Lyme", ct_2012$town)
 ```{r}
 ##combining rows with same town name
 library(tidyverse)
-ct2012<- ct_2012 |>
+ct2012 <- ct_2012 |>
   group_by(town) |>
   mutate(row_id = row_number()) |>
   pivot_wider(names_from = row_id, values_from = c(candidate, party, office, votes), names_prefix = "Row", values_fill = NULL) |>
@@ -115,6 +115,16 @@ coastal_towns <- c("Bridgeport", "Darien", "Fairfield", "Greenwich", "Norwalk", 
 
 ##Creating column for coastal towns
 CT_votes$Location <- ifelse(CT_votes$town %in% coastal_towns, "Coastal", "Non-Coastal")
+
+##Calculating Point Estimate 
+point_estimates <- CT_votes %>%
+  group_by(Location) %>%
+  summarize(
+    mean_rep_vote_diff = mean(rep_vote_percent_diff),
+    mean_dem_vote_diff = mean(dem_vote_percent_diff),
+    se_rep_vote_diff = sd(rep_vote_percent_diff) / sqrt(n()), # Standard error for Republican vote difference
+    se_dem_vote_diff = sd(dem_vote_percent_diff) / sqrt(n())  # Standard error for Democratic vote difference
+  )
 ```
 
 ```{r}
