@@ -158,7 +158,6 @@ census <- read.csv("ct_cvap_2010.csv")
 
 census <- census 
 
-
 damage <- read.csv("FemaDamageAssessmnts_01172013_new_8825820061294884462.csv")
 damage <- damage |>
   rename(GEOID = X2010.Census.Block.Group.ID) |>
@@ -167,7 +166,12 @@ damage <- damage |>
 damage <- damage |>
   mutate(GEOID = as.numeric(GEOID))
 
-census_damage <- merge(damage, census, by = "GEOID")
+census_damage <- merge(damage, census, by = "GEOID", all = TRUE)
+
+census_damage <- census_damage |>
+  mutate(GEOID = str_sub(as.character(GEOID), 1, 10)) |>
+  mutate(GEOID = as.numeric(GEOID))
+
 
 geoid_zcta5 <- read.csv("CT_ZCTA5_GEOID.csv")
 
@@ -177,6 +181,26 @@ geoid_zcta5 <- geoid_zcta5 |>
 census_damage_zcta5 <- merge(geoid_zcta5, census_damage, by = "GEOID", all = TRUE)
 
 zcta5_town <- read.csv("ZCTA_CT_7124349094171390284.csv")
+
+zcta5_town <- zcta5_town |>
+  rename(ZCTA5 = ZCTA5CE10) |>
+  select(ZCTA5, Town)
+
+
+
+census_damage_zcta5_town <- merge(zcta5_town, census_damage_zcta5, by = "ZCTA5", all = TRUE)
+
+census_damage_zcta5_town <- census_damage_zcta5_town |>
+  select(Town, Total.Damaged..any.type., Total.Housing.Units, 
+         CVAP_TOT10, CVAP_NHS10, CVAP_AIA10, CVAP_ASN10, CVAP_BLK10, CVAP_NHP10, CVAP_WHT10, CVAP_AIW10,
+         CVAP_ASW10, CVAP_BLW10, CVAP_AIB10) 
+
+treatmentdata <- aggregate(.~ Town, data = census_damage_zcta5_town, sum)
+
+treatmentdata <- treatmentdata |>
+  rename(town = Town)
+
+finaldata <- merge(CT_votes, treatmentdata, by = "town", all = TRUE)
 ```
 
 
