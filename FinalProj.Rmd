@@ -221,6 +221,16 @@ town_data <- town_data |>
 
 ##combine census, damage, and voting data
 finaldata <- merge(CT_votes, town_data, by = "town", all = TRUE)
+
+##row for percentage white non-hispanic
+finaldata <- finaldata |>
+  mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE)
+
+View(finaldata)
 ```
 
+#Tests
+```{r}
+
+```
 
