@@ -225,18 +225,19 @@ town_data <- town_data |>
 finaldata <- merge(CT_votes, town_data, by = "town", all = TRUE)
 finaldata <- merge(finaldata, ct_incomes, by = "town", all = TRUE)
 
-##row for percentage white non-hispanic, storm cindition column
-finaldata <- finaldata |>
-  mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
-  mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
-  mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage"))
-
 ##cleaning numeric income values
 finaldata$Per.capita.income <- as.numeric(gsub("[\\$,]", "", finaldata$Per.capita.income))
 finaldata$Median.household.income <- as.numeric(gsub("[\\$,]", "", finaldata$Median.household.income))
 finaldata$Population <- gsub(",", "", finaldata$Population, fixed = TRUE)
 finaldata$Population <- as.numeric(finaldata$Population)
 
+##row for percentage white non-hispanic, storm cindition column
+finaldata <- finaldata |>
+  mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
+  mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
+  mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage")) |>
+  mutate(dem_raw_vote_swing = round(dem_vote_percent_diff*Population)) |>
+  mutate(coastal_binary = if_else(Location == "Coastal", 1, 0))
 
 View(finaldata)
 ```
@@ -244,7 +245,7 @@ View(finaldata)
 #Tests
 ```{r}
 ##regression
-damage_regression <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + Population + Per.capita.income + Median.household.income, data = finaldata)
+damage_regression <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + Population + Per.capita.income + Median.household.income + coastal_binary, data = finaldata)
 summary(damage_regression)
 
 ##subset based on damage treatment
@@ -262,10 +263,10 @@ damage_viz <- ggplot(data = outlier_removed, aes(x = Total.Damaged..any.type., y
 damage_viz
 
 ##DID
-damaged_votes <- mean(finaldata$votedif[finaldata$condition == "Damage"], na.rm = TRUE)
-no_damage_vote <- mean(finaldata$votedif[finaldata$condition == "No Damage"], na.rm = TRUE)
+damaged_votes <- mean(finaldata$dem_raw_vote_swing[finaldata$condition == "Damage"], na.rm = TRUE)
+no_damage_vote <- mean(finaldata$dem_raw_vote_swing[finaldata$condition == "No Damage"], na.rm = TRUE)
 
-dif_damage_pct = ((damaged_votes - no_damage_vote)*10)
-dif_damage_pct
+dif_damage_numeric = ((damaged_votes - no_damage_vote)*10)
+dif_damage_numeric
 ```
 
