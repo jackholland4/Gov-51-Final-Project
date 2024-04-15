@@ -222,15 +222,29 @@ town_data <- town_data |>
 ##combine census, damage, and voting data
 finaldata <- merge(CT_votes, town_data, by = "town", all = TRUE)
 
-##row for percentage white non-hispanic
+##row for percentage white non-hispanic, edited storm data
 finaldata <- finaldata |>
-  mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE)
+  mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
+  mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.))
 
 View(finaldata)
 ```
 
 #Tests
 ```{r}
+damage_regression <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + votedif, data = finaldata)
+
+##subset based on damage treatment
+damaged_subset <- finaldata[finaldata$Total.Damaged..any.type. != 0, ]
+control_subset <- finaldata[finaldata$Total.Damaged..any.type. == 0, ]
+
+## means of dem_vote_percent_diff for each location group
+
+ggplot(data = damaged_subset, aes(x = Total.Damaged..any.type., y = dem_vote_percent_diff)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  labs(x = "Damage", y = "Dem Vote Percent Difference", title = "Property Damage vs. Dem Vote Shift") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
 
 ```
 
