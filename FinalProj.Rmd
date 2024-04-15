@@ -236,7 +236,7 @@ finaldata <- finaldata |>
   mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
   mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
   mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage")) |>
-  mutate(dem_raw_vote_swing = round(dem_vote_percent_diff*Population)*0.43) |>
+  mutate(dem_raw_vote_swing = round((dem_vote_percent_diff*Population)*0.043)) |>
   mutate(coastal_binary = if_else(Location == "Coastal", 1, 0))
 
 View(finaldata)
