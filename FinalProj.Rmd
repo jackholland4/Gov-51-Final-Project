@@ -164,7 +164,7 @@ library(stringr)
 library(tidyverse)
 library(dplyr)
 
-##load and clean GEOID, ZCTA, and Town data
+##load and clean GEOID, ZCTA, Income, and Town data
 
 geoid_zcta5 <- read.csv("CT_ZCTA5_GEOID.csv")
 
@@ -176,6 +176,8 @@ zcta5_town <- read.csv("ZCTA_CT_7124349094171390284.csv")
 zcta5_town <- zcta5_town |>
   rename(ZCTA5 = ZCTA5CE10) |>
   select(ZCTA5, Town)
+
+ct_incomes <- read.csv("ct_incomes.csv")
 
 ##put census data in terms of town
 census <- read.csv("ct_cvap_2010.csv") 
@@ -221,18 +223,28 @@ town_data <- town_data |>
 
 ##combine census, damage, and voting data
 finaldata <- merge(CT_votes, town_data, by = "town", all = TRUE)
+finaldata <- merge(finaldata, ct_incomes, by = "town", all = TRUE)
 
 ##row for percentage white non-hispanic, storm cindition column
 finaldata <- finaldata |>
   mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
   mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
   mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage"))
+
+##cleaning numeric income values
+finaldata$Per.capita.income <- as.numeric(gsub("[\\$,]", "", finaldata$Per.capita.income))
+finaldata$Median.household.income <- as.numeric(gsub("[\\$,]", "", finaldata$Median.household.income))
+finaldata$Population <- gsub(",", "", finaldata$Population, fixed = TRUE)
+finaldata$Population <- as.numeric(finaldata$Population)
+
+
+View(finaldata)
 ```
 
 #Tests
 ```{r}
 ##regression
-damage_regression <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white, data = finaldata)
+damage_regression <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + Population + Per.capita.income + Median.household.income, data = finaldata)
 summary(damage_regression)
 
 ##subset based on damage treatment
@@ -253,7 +265,7 @@ damage_viz
 damaged_votes <- mean(finaldata$votedif[finaldata$condition == "Damage"], na.rm = TRUE)
 no_damage_vote <- mean(finaldata$votedif[finaldata$condition == "No Damage"], na.rm = TRUE)
 
-dif_damage_pct = (damaged_votes - no_damage_vote)*10
+dif_damage_pct = ((damaged_votes - no_damage_vote)*10)
 dif_damage_pct
 ```
 
