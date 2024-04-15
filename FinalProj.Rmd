@@ -236,7 +236,7 @@ finaldata <- finaldata |>
   mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
   mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
   mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage")) |>
-  mutate(dem_raw_vote_swing = round(dem_vote_percent_diff*Population)) |>
+  mutate(dem_raw_vote_swing = round(dem_vote_percent_diff*Population)*0.43) |>
   mutate(coastal_binary = if_else(Location == "Coastal", 1, 0))
 
 View(finaldata)
@@ -265,8 +265,21 @@ damage_viz <- ggplot(data = outlier_removed, aes(x = Total.Damaged..any.type., y
   geom_text(aes(label = town), vjust = -0.5, size = 3) +
   labs(x = "Number of Properties Damaged", y = "Dem Vote Percent Difference", title = "Property Damage vs. Democratic Vote Shift (Subsetted to Towns Damaged)", color = "Dem. Vote Shift (%)") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  scale_color_gradient(low = "red", high = "royalblue")
+  scale_color_gradient2(low = "red", high = "royalblue", midpoint = 0, guide = "colourbar") +
+  geom_hline(yintercept = 0, alpha = 0.5)
+
 damage_viz
+
+raw_swing_map <- ggplot(data = outlier_removed, aes(x = Total.Damaged..any.type., y = dem_raw_vote_swing)) +
+  geom_point(aes(color = dem_raw_vote_swing), size = 3) +
+  geom_smooth(method = "lm", color = "blue") +
+  geom_text(aes(label = town), vjust = -0.5, size = 3) +
+  labs(x = "Number of Properties Damaged", y = "Dem Vote Raw Difference", title = "Property Damage vs. Democratic Raw Vote Shift (Subsetted to Towns Damaged)", color = "Dem. Vote Shift") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  scale_color_gradient2(low = "red", high = "royalblue", midpoint = 0, guide = "colourbar") +
+  geom_hline(yintercept = 0, alpha = 0.5)
+
+raw_swing_map
 
 ##DID
 damaged_votes <- mean(finaldata$dem_raw_vote_swing[finaldata$condition == "Damage"], na.rm = TRUE)
