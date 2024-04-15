@@ -244,21 +244,25 @@ View(finaldata)
 
 #Tests
 ```{r}
-##regression
-damage_regression <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + Population + Per.capita.income + Median.household.income + coastal_binary, data = finaldata)
-summary(damage_regression)
-
 ##subset based on damage treatment
 damaged_subset <- finaldata[finaldata$Total.Damaged..any.type. != 0, ]
 control_subset <- finaldata[finaldata$Total.Damaged..any.type. == 0, ]
 
-##subsetted plot
-outlier_removed <- damaged_subset[damaged_subset$votedif >= -0.1, ]
+##regression
+regression_1 <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + Population + Per.capita.income + Median.household.income + coastal_binary, data = finaldata)
+summary(damage_regression)
 
-damage_viz <- ggplot(data = outlier_removed, aes(x = Total.Damaged..any.type., y = votedif)) +
+damaged_subset_regression <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + Population + Per.capita.income + Median.household.income + coastal_binary, data = damaged_subset)
+summary(damaged_subset_regression)
+
+##subsetted plot
+outlier_removed <- damaged_subset[damaged_subset$Total.Damaged..any.type. <= 500, ]
+
+damage_viz <- ggplot(data = outlier_removed, aes(x = Total.Damaged..any.type., y = dem_vote_percent_diff)) +
   geom_point(color = "blue") +
   geom_smooth(method = "lm", color = "blue") +
-  labs(x = "Damage", y = "Dem Vote Percent Difference", title = "Property Damage vs. Democratic Vote Shift (Subsetted to Towns Damaged)") +
+  geom_text(aes(label = town), vjust = -0.5, size = 3) +
+  labs(x = "Number of Properties Damaged", y = "Dem Vote Percent Difference", title = "Property Damage vs. Democratic Vote Shift (Subsetted to Towns Damaged)") +
   theme(axis.text.x = element_text(angle = 90, hjust = 1))
 damage_viz
 
