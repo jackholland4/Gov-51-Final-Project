@@ -129,9 +129,22 @@ point_estimates
 library(haven)
 CTtwothousdata <- read_dta("CT_2000.dta")
 CTtwothousdata <- CTtwothousdata |>
-  rename()
+  rename("Republican votes" = g2000_USP_rv,
+         "Democrat votes" = g2000_USP_dv)|>
+  select(town, "Republican votes", "Democrat votes") |>
+  mutate(total_votes = `Democrat votes` + `Republican votes`) |>
+  mutate(dem_voteshare = `Democrat votes` / total_votes)
 
 CTtwothousfourdata <- read_dta("CT_2004.dta") 
+CTtwothousfourdata <- CTtwothousfourdata |>
+  rename("Democrat votes" = g2004_USP_dv)|>
+  select(town, "Democrat votes", g2004_USS_dv, g2004_USS_rv) |>
+  mutate(total_votes = g2004_USS_dv + g2004_USS_rv) |>
+  mutate(dem_voteshare = `Democrat votes` / total_votes)
+
+
+CT2016data <- CT2016data |>
+  
 ```
 
 
