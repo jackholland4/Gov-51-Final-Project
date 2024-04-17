@@ -105,7 +105,7 @@ merged_CT <- merge(ct2008, ct2012, by = c("town"), all = TRUE) |>
 
 ##Create a table with only variables of interest, voteshare difference from 2008 to 2012
 CT_votes <- merged_CT |>
-  select(town, rep_vote_percent_diff, dem_vote_percent_diff, votedif)
+  select(town, rep_vote_percent_diff, dem_vote_percent_diff, votedif, `2008_total`, `2012_total`)
 
 ##List of coastal towns
 coastal_towns <- c("Bridgeport", "Darien", "Fairfield", "Greenwich", "Norwalk", "Stamford", 
