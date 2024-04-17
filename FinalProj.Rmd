@@ -105,8 +105,10 @@ merged_CT <- merge(ct2008, ct2012, by = c("town"), all = TRUE) |>
 
 ##Create a table with only variables of interest, voteshare difference from 2008 to 2012
 CT_votes <- merged_CT |>
-  select(town, dif_dem_voteshare, dif_rep_voteshare, rep_vote_percent_diff, dem_vote_percent_diff, votedif, `2008_dem_votes`, `2012_dem_votes`)
+  select(town, dif_dem_voteshare, dif_rep_voteshare, rep_vote_percent_diff, dem_vote_percent_diff, votedif, `2008_dem_votes`, `2012_dem_votes`, `2008_demvoteshare`, `2012_demvoteshare`)
 
+CT_votes0812 <- CT_votes |>
+  select(town, `2008_demvoteshare`, `2012_demvoteshare`)
 
 ##Creating column for damaged towns
 CT_votes$Damage <- ifelse(finaldata$condition == "Damage", "Damage", "No Damage")
@@ -133,17 +135,42 @@ CTtwothousdata <- CTtwothousdata |>
          "Democrat votes" = g2000_USP_dv)|>
   select(town, "Republican votes", "Democrat votes") |>
   mutate(total_votes = `Democrat votes` + `Republican votes`) |>
-  mutate(dem_voteshare = `Democrat votes` / total_votes)
+  mutate(dem_voteshare2000 = `Democrat votes` / total_votes)|>
+  select(town, dem_voteshare2000)
 
 CTtwothousfourdata <- read_dta("CT_2004.dta") 
 CTtwothousfourdata <- CTtwothousfourdata |>
   rename("Democrat votes" = g2004_USP_dv)|>
   select(town, "Democrat votes", g2004_USS_dv, g2004_USS_rv) |>
   mutate(total_votes = g2004_USS_dv + g2004_USS_rv) |>
-  mutate(dem_voteshare = `Democrat votes` / total_votes)
+  mutate(dem_voteshare2004 = `Democrat votes` / total_votes) |>
+  select(town, dem_voteshare2004)
 
-
+CT2016data <- read_csv("NovemberPresidentialElection.csv")
 CT2016data <- CT2016data |>
+  filter(`Candidate Name` == "Clinton and Kaine" | `Candidate Name` == "Trump and Pence")
+
+aggregated_data <- aggregate(`Vote Totals` ~ `Town Name` + `Candidate Name`, data = CT2016data, FUN = sum)
+
+CT2016edited <- aggregated_data|>
+  pivot_wider(names_from = "Candidate Name", values_from = "Vote Totals") |>
+  rename(dem_votes = "Clinton and Kaine") |>
+  rename(rep_votes = "Trump and Pence") |>
+  select(`Town Name`, dem_votes, rep_votes)  |>
+  rename(town = `Town Name`) |>
+  mutate(total_votes = dem_votes + rep_votes) |>
+  mutate(dem_voteshare2016 = dem_votes/total_votes) |>
+  select(town, dem_voteshare2016)
+
+merged_CT000812 <- merge(CT_votes0812, CTtwothousdata, by = c("town"), all = TRUE)
+
+merged_CT00040812 <- merge(merged_CT000812, CTtwothousfourdata, by = c("town"), all = TRUE)
+
+merged_CT0004081216 <- merge(merged_CT00040812, CT2016edited, by = c("town"), all = TRUE)
+
+merged_CT0004081216 <- merged_CT0004081216 |>
+  select(town, dem_voteshare2000, dem_voteshare2004, `2008_demvoteshare`, `2012_demvoteshare`,
+         dem_voteshare2016)
   
 ```
 
