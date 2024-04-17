@@ -105,7 +105,7 @@ merged_CT <- merge(ct2008, ct2012, by = c("town"), all = TRUE) |>
 
 ##Create a table with only variables of interest, voteshare difference from 2008 to 2012
 CT_votes <- merged_CT |>
-  select(town, rep_vote_percent_diff, dem_vote_percent_diff, votedif, `2008_total`, `2012_total`)
+  select(town, rep_vote_percent_diff, dem_vote_percent_diff, votedif, `2008_dem_votes`, `2012_dem_votes`)
 
 ##List of coastal towns
 coastal_towns <- c("Bridgeport", "Darien", "Fairfield", "Greenwich", "Norwalk", "Stamford", 
@@ -237,7 +237,7 @@ finaldata <- finaldata |>
   mutate(Total.Damaged..any.type. = log(Total.Damaged..any.type.)) |>
   mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
   mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage")) |>
-  mutate(dem_raw_vote_swing = round((dem_vote_percent_diff*Population)*0.043)) |>
+  mutate(dem_raw_vote_swing = `2012_dem_votes` - `2008_dem_votes`) |>
   mutate(coastal_binary = if_else(Location == "Coastal", 1, 0))
 
 View(finaldata)
