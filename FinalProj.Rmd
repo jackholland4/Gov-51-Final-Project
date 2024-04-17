@@ -256,6 +256,12 @@ summary(damage_regression)
 damaged_subset_regression <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + Population + Per.capita.income + Median.household.income + coastal_binary, data = damaged_subset)
 summary(damaged_subset_regression)
 
+modelsummary(regression_1)
+png(file = "/Users/jackholland/Downloads/summary.PNG", width = 800, height = 600)
+print(regression_1)
+png(file = "summary_table.png", width = 800, height = 600)
+dev.off()
+
 #graphing
 outlier_removed <- damaged_subset[damaged_subset$Total.Damaged..any.type. <= 500 & damaged_subset$dem_vote_percent_diff <=2, ]
 outlier_removed$dem_vote_percent_diff <- as.numeric(outlier_removed$dem_vote_percent_diff)
