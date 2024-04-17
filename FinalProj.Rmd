@@ -120,6 +120,8 @@ point_estimates <- CT_votes %>%
     se_rep_vote_diff = sd(rep_vote_percent_diff) / sqrt(n()), # Standard error for Republican vote difference
     se_dem_vote_diff = sd(dem_vote_percent_diff) / sqrt(n())  # Standard error for Democratic vote difference
   )
+
+point_estimates
 ```
 
 ```{r}
