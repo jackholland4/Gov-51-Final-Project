@@ -107,18 +107,13 @@ merged_CT <- merge(ct2008, ct2012, by = c("town"), all = TRUE) |>
 CT_votes <- merged_CT |>
   select(town, rep_vote_percent_diff, dem_vote_percent_diff, votedif, `2008_dem_votes`, `2012_dem_votes`)
 
-##List of coastal towns
-coastal_towns <- c("Bridgeport", "Darien", "Fairfield", "Greenwich", "Norwalk", "Stamford", 
-                   "Stratford", "Westport", "Branford", "East Haven", "Guilford", "Madison", 
-                   "Milford", "New Haven", "West Haven", "Clinton", "Old Saybrook", "Westbrook", 
-                   "East Lyme", "Groton", "New London", "Stonington", "Waterford")
 
-##Creating column for coastal towns
-CT_votes$Location <- ifelse(CT_votes$town %in% coastal_towns, "Coastal", "Non-Coastal")
+##Creating column for damaged towns
+CT_votes$Damage <- ifelse(finaldata$condition == "Damage", "Damage", "No Damage")
 
 ##Calculating Point Estimate 
 point_estimates <- CT_votes %>%
-  group_by(Location) %>%
+  group_by(Damage) %>%
   summarize(
     mean_rep_vote_diff = mean(rep_vote_percent_diff),
     mean_dem_vote_diff = mean(dem_vote_percent_diff),
@@ -130,11 +125,11 @@ point_estimates <- CT_votes %>%
 ```{r}
 ##Plot for voteshare
 ggplot(CT_votes, aes(x = rep_vote_percent_diff, y = dem_vote_percent_diff, label = town)) +
-  geom_point(aes(color = Location, alpha = Location), size = 3) +
-  scale_color_manual(values = c("Coastal" = "blue", "Non-Coastal" = "orange")) + ##make non-coastal translucent
+  geom_point(aes(color = Damage, alpha = Damage), size = 3) +
+  scale_color_manual(values = c("Damage" = "blue", "No Damage" = "orange")) + ##make non-coastal translucent
   xlim(-1.15, 0.6) + ##adjusting axis parameters so dots fit better
   ylim(-0.5, 7) +
-  scale_alpha_manual(values = c("Coastal" = 1, "Non-Coastal" = 0.3)) +
+  scale_alpha_manual(values = c("Damage" = 1, "No Damage" = 0.3)) +
   geom_text(aes(label = town), hjust = 1.1, vjust = 1.1, check_overlap = TRUE, size = 3) + ##label some times w/o overlap
   labs(
     x = "Difference in Republican Vote Share",
@@ -148,9 +143,9 @@ ggplot(CT_votes, aes(x = rep_vote_percent_diff, y = dem_vote_percent_diff, label
 ```
 ```{r}
 ##Plot for vote cast differences
-ggplot(CT_votes, aes(x = factor(1), y = votedif, fill = Location)) +
+ggplot(CT_votes, aes(x = factor(1), y = votedif, fill = Damage)) +
   geom_jitter(width = 0.1, size = 3, shape = 21, color = "black", alpha = 0.6) +
-  scale_fill_manual(values = c("Coastal" = "blue", "Non-Coastal" = "orange")) +
+  scale_fill_manual(values = c("Damage" = "blue", "No Damage" = "orange")) +
   labs(x = "Difference in Votes Cast", y = "Vote Cast Differences", title = "Vote Cast Difference in Towns Across Connecticut (2008 to 2012)") +
   theme_minimal() +
   theme(axis.text.x = element_blank(), axis.ticks.x = element_blank()) +
