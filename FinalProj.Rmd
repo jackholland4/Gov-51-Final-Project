@@ -258,10 +258,10 @@ summary(regression_1)
 modelsummary(regression_1, stars = TRUE)
 
 
-##png(file = "/Users/jackholland/Downloads/summary.PNG", width = 800, height = 600)
-##print(regression_1)
-##png(file = "summary_table.png", width = 800, height = 600)
-##dev.off()
+png(file = "/Users/menasolomon/Desktop/summary.PNG", width = 800, height = 600)
+print(regression_1)
+png(file = "summary_table.png", width = 800, height = 600)
+dev.off()
 
 #graphing
 outlier_removed <- damaged_subset[damaged_subset$Total.Damaged..any.type. <= 500 & damaged_subset$dem_vote_percent_diff <=2, ]
