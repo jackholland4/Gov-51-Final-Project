@@ -246,6 +246,7 @@ View(finaldata)
 #Tests
 ```{r}
 library(modelsummary)
+
 ##subset based on damage treatment
 damaged_subset <- finaldata[finaldata$Total.Damaged..any.type. != 0, ]
 control_subset <- finaldata[finaldata$Total.Damaged..any.type. == 0, ]
@@ -254,8 +255,9 @@ control_subset <- finaldata[finaldata$Total.Damaged..any.type. == 0, ]
 regression_1 <- lm(dem_vote_percent_diff ~ Total.Damaged..any.type. + pct_white + Population + Per.capita.income + Median.household.income, data = finaldata)
 summary(regression_1)
 
+modelsummary(regression_1, stars = TRUE)
 
-modelsummary(regression_1)
+
 ##png(file = "/Users/jackholland/Downloads/summary.PNG", width = 800, height = 600)
 ##print(regression_1)
 ##png(file = "summary_table.png", width = 800, height = 600)
