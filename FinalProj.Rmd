@@ -234,6 +234,7 @@ finaldata$Population <- as.numeric(finaldata$Population)
 ##row for percentage white non-hispanic, storm cindition column
 finaldata <- finaldata |>
   mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
+  mutate(Total.Damaged..any.type. = log(Total.Damaged..any.type.)) |>
   mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
   mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage")) |>
   mutate(dem_raw_vote_swing = round((dem_vote_percent_diff*Population)*0.043)) |>
@@ -282,10 +283,10 @@ raw_swing_map <- ggplot(data = outlier_removed, aes(x = Total.Damaged..any.type.
 raw_swing_map
 
 ##DID
-damaged_votes <- mean(finaldata$dem_raw_vote_swing[finaldata$condition == "Damage"], na.rm = TRUE)
-no_damage_vote <- mean(finaldata$dem_raw_vote_swing[finaldata$condition == "No Damage"], na.rm = TRUE)
+damaged_votes <- mean(finaldata$dem_vote_percent_diff[finaldata$condition == "Damage"], na.rm = TRUE)
+no_damage_vote <- mean(finaldata$dem_vote_percent_diff[finaldata$condition == "No Damage"], na.rm = TRUE)
 
-dif_damage_numeric = ((damaged_votes - no_damage_vote)*10)
+dif_damage_numeric = (damaged_votes - no_damage_vote)
 dif_damage_numeric
 ```
 
