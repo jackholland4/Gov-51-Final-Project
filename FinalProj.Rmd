@@ -351,22 +351,29 @@ damage_viz <- ggplot(data = outlier_removed, aes(x = Total.Damaged..any.type., y
 
 damage_viz
 
-raw_swing_map <- ggplot(data = outlier_removed, aes(x = Total.Damaged..any.type., y = dem_raw_vote_swing)) +
-  geom_point(aes(color = dem_raw_vote_swing), size = 3) +
-  geom_smooth(method = "lm", color = "blue") +
-  geom_text(aes(label = town), vjust = -0.5, size = 3) +
-  labs(x = "Number of Properties Damaged", y = "Dem Vote Raw Difference", title = "Property Damage vs. Democratic Raw Vote Shift (Subsetted to Towns Damaged)", color = "Dem. Vote Shift") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
-  scale_color_gradient2(low = "red", high = "royalblue", midpoint = 0, guide = "colourbar") +
-  geom_hline(yintercept = 0, alpha = 0.5)
-
-raw_swing_map
-
 ##DID
 damaged_votes <- mean(finaldata$dif_dem_voteshare[finaldata$condition == "Damage"], na.rm = TRUE)
 no_damage_vote <- mean(finaldata$dif_dem_voteshare[finaldata$condition == "No Damage"], na.rm = TRUE)
 
 dif_damage_numeric = (damaged_votes - no_damage_vote)
 dif_damage_numeric
+```
+```{r}
+##one more graphic
+data <- data.frame(
+  Measure = c(
+    "Difference in Difference",
+    "Mean Democratic Vote Shift (Damaged Towns, %)",
+    "Mean Democratic Vote Shift (Unharmed Towns, %)"
+  ),
+  Value = c(dif_damage_numeric, damaged_votes, no_damage_vote)
+)
+
+DID_table <- kable(data, format = "html", caption = "Comparison of Democratic Vote Percentage Differences", col.names = c("", "Value"), align = "c")
+
+DID_table <- DID_table %>%
+  kable_styling(full_width = FALSE)
+
+print(DID_table)
 ```
 
