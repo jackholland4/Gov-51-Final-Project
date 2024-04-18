@@ -148,7 +148,9 @@ CTtwothousfourdata <- CTtwothousfourdata |>
 
 CT2016data <- read_csv("NovemberPresidentialElection.csv")
 CT2016data <- CT2016data |>
-  filter(`Candidate Name` == "Clinton and Kaine" | `Candidate Name` == "Trump and Pence")
+  filter(`Candidate Name` == "Clinton and Kaine" | `Candidate Name` == "Trump and Pence") 
+
+CT2016data$`Town Name` <- ifelse(CT2016data$`Town Name` == "New Millford", "New Milford", CT2016data$`Town Name`)
 
 aggregated_data <- aggregate(`Vote Totals` ~ `Town Name` + `Candidate Name`, data = CT2016data, FUN = sum)
 
@@ -171,7 +173,13 @@ merged_CT0004081216 <- merge(merged_CT00040812, CT2016edited, by = c("town"), al
 merged_CT0004081216 <- merged_CT0004081216 |>
   select(town, dem_voteshare2000, dem_voteshare2004, `2008_demvoteshare`, `2012_demvoteshare`,
          dem_voteshare2016)
-  
+
+##Creating column for damaged towns
+merged_CT0004081216$Damage <- ifelse(finaldata$condition == "Damage", "Damage", "No Damage")
+
+scatterplotdata <- merged_CT0004081216 |>
+  group_by(Damage) |>
+  mutate(`2000` = mean(dem_voteshare2000))
 ```
 
 
