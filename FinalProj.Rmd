@@ -187,17 +187,26 @@ scatterplotdata <- merged_CT0004081216 |>
     pivot_longer(cols = c(`2000`, `2004`, `2008`, `2012`, `2016`), 
                names_to = c("Year"),
                values_to = "Mean_Dem_Voteshare") |>
-  pivot_wider(names_from = Damage, values_from = Mean_Dem_Voteshare)
+  pivot_wider(names_from = Damage, values_from = Mean_Dem_Voteshare) |>
+  ungroup()
 
-ggplot(scatterplotdata, aes(x = Year)) +
+df <- data.frame(
+  Year = c(2000, 2004, 2008, 2012, 2016),
+  Damage = c(0.5850583, 0.6150757, 0.3855000, 0.5891163, 0.5978477),
+  No_Damage = c(0.5551587, 0.5766545, 0.4289768, 0.5377581, 0.4995564)
+)
+
+# Plot
+ggplot(df, aes(x = Year)) +
   geom_point(aes(y = Damage), color = "blue") +
-  geom_point(aes(y = `No Damage`), color = "red") +
-  geom_line(aes(y = Damage), color = "lightblue", linewidth = 1) +
-  geom_line(aes(y = `No Damage`), color = "pink", linewidth = 1) +
+  geom_point(aes(y = No_Damage), color = "red") +
+  geom_line(aes(y = Damage), color = "lightblue", size = 1) +
+  geom_line(aes(y = No_Damage), color = "pink", size = 1) +
   labs(title = "Mean Democratic Vote Share Over Time",
        x = "Year",
        y = "Mean Democratic Vote Share") +
   scale_y_continuous(limits = c(0.3, 0.7)) +
+  scale_x_continuous(breaks = df$Year, labels = df$Year) + 
   theme_minimal()
 ```
 
