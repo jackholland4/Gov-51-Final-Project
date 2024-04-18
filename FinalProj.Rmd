@@ -61,6 +61,88 @@ ct_2012$town <- ifelse(ct_2012$town == "OldLyme", "Old Lyme", ct_2012$town)
 ```
 
 ```{r}
+library(stringr)
+library(tidyverse)
+library(dplyr)
+
+##load and clean GEOID, ZCTA, Income, and Town data
+
+geoid_zcta5 <- read.csv("CT_ZCTA5_GEOID.csv")
+
+geoid_zcta5 <- geoid_zcta5 |>
+  select(ZCTA5, GEOID)
+
+zcta5_town <- read.csv("ZCTA_CT_7124349094171390284.csv")
+
+zcta5_town <- zcta5_town |>
+  rename(ZCTA5 = ZCTA5CE10) |>
+  select(ZCTA5, Town)
+
+ct_incomes <- read.csv("ct_incomes.csv")
+
+##put census data in terms of town
+census <- read.csv("ct_cvap_2010.csv") 
+census2 <- census |>
+  mutate(GEOID = str_sub(as.character(GEOID), 1, 10)) |>
+  mutate(GEOID = as.numeric(GEOID))
+
+census_geoid <- merge(census2, geoid_zcta5, by = "GEOID")
+
+census_zcta5 <- merge(zcta5_town, census_geoid, by = "ZCTA5")
+
+census_zcta5 <- census_zcta5 |>
+  select(Town, CVAP_TOT10, CVAP_NHS10, CVAP_AIA10, CVAP_ASN10, CVAP_BLK10, CVAP_NHP10, CVAP_WHT10, CVAP_AIW10, CVAP_ASW10, CVAP_BLW10, CVAP_AIB10) 
+
+census_town_data <- aggregate(.~ Town, data = census_zcta5, sum)
+
+##put damage data in terms of town
+damage <- read.csv("FemaDamageAssessmnts_01172013_new_8825820061294884462.csv")
+damage <- damage |>
+  rename(GEOID = X2010.Census.Block.Group.ID) |>
+  filter(str_sub(GEOID, 1, 2) == "09") 
+
+damage <- damage |>
+  mutate(GEOID = as.numeric(GEOID)) |>
+  mutate(GEOID = str_sub(as.character(GEOID), 1, 10)) |>
+  mutate(GEOID = as.numeric(GEOID))
+
+damage_geoid <- merge(damage, geoid_zcta5, by = "GEOID")
+
+damage_zcta5 <- merge(zcta5_town, damage_geoid, by = "ZCTA5")
+
+damage_zcta5 <- damage_zcta5 |>
+  select(Town, Total.Damaged..any.type., Total.Housing.Units) 
+
+damage_town_data <- aggregate(.~ Town, data = damage_zcta5, sum)
+
+## combine census and damage data 
+town_data <- merge(census_town_data, damage_town_data, by = "Town", all = TRUE)
+
+town_data <- town_data |>
+  rename(town = Town)
+
+##combine census, damage, and voting data
+finaldata <- merge(CT_votes, town_data, by = "town", all = TRUE)
+finaldata <- merge(finaldata, ct_incomes, by = "town", all = TRUE)
+
+##cleaning numeric income values
+finaldata$Per.capita.income <- as.numeric(gsub("[\\$,]", "", finaldata$Per.capita.income))
+finaldata$Median.household.income <- as.numeric(gsub("[\\$,]", "", finaldata$Median.household.income))
+finaldata$Population <- gsub(",", "", finaldata$Population, fixed = TRUE)
+finaldata$Population <- as.numeric(finaldata$Population)
+
+##row for percentage white non-hispanic, storm cindition column
+finaldata <- finaldata |>
+  mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
+  mutate(Total.Damaged..any.type. = log(Total.Damaged..any.type.)) |>
+  mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
+  mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage")) |>
+  mutate(dem_raw_vote_swing = `2012_dem_votes` - `2008_dem_votes`) 
+
+View(finaldata)
+```
+
+```{r}
 ##combining rows with same town name
 library(tidyverse)
 ct2012 <- ct_2012 |>
@@ -245,88 +327,6 @@ ggplot(CT_votes, aes(x = factor(1), y = votedif, fill = Damage)) +
 ```
 
 
-```{r}
-library(stringr)
-library(tidyverse)
-library(dplyr)
-
-##load and clean GEOID, ZCTA, Income, and Town data
-
-geoid_zcta5 <- read.csv("CT_ZCTA5_GEOID.csv")
-
-geoid_zcta5 <- geoid_zcta5 |>
-  select(ZCTA5, GEOID)
-
-zcta5_town <- read.csv("ZCTA_CT_7124349094171390284.csv")
-
-zcta5_town <- zcta5_town |>
-  rename(ZCTA5 = ZCTA5CE10) |>
-  select(ZCTA5, Town)
-
-ct_incomes <- read.csv("ct_incomes.csv")
-
-##put census data in terms of town
-census <- read.csv("ct_cvap_2010.csv") 
-census2 <- census |>
-  mutate(GEOID = str_sub(as.character(GEOID), 1, 10)) |>
-  mutate(GEOID = as.numeric(GEOID))
-
-census_geoid <- merge(census2, geoid_zcta5, by = "GEOID")
-
-census_zcta5 <- merge(zcta5_town, census_geoid, by = "ZCTA5")
-
-census_zcta5 <- census_zcta5 |>
-  select(Town, CVAP_TOT10, CVAP_NHS10, CVAP_AIA10, CVAP_ASN10, CVAP_BLK10, CVAP_NHP10, CVAP_WHT10, CVAP_AIW10, CVAP_ASW10, CVAP_BLW10, CVAP_AIB10) 
-
-census_town_data <- aggregate(.~ Town, data = census_zcta5, sum)
-
-##put damage data in terms of town
-damage <- read.csv("FemaDamageAssessmnts_01172013_new_8825820061294884462.csv")
-damage <- damage |>
-  rename(GEOID = X2010.Census.Block.Group.ID) |>
-  filter(str_sub(GEOID, 1, 2) == "09") 
-
-damage <- damage |>
-  mutate(GEOID = as.numeric(GEOID)) |>
-  mutate(GEOID = str_sub(as.character(GEOID), 1, 10)) |>
-  mutate(GEOID = as.numeric(GEOID))
-
-damage_geoid <- merge(damage, geoid_zcta5, by = "GEOID")
-
-damage_zcta5 <- merge(zcta5_town, damage_geoid, by = "ZCTA5")
-
-damage_zcta5 <- damage_zcta5 |>
-  select(Town, Total.Damaged..any.type., Total.Housing.Units) 
-
-damage_town_data <- aggregate(.~ Town, data = damage_zcta5, sum)
-
-## combine census and damage data 
-town_data <- merge(census_town_data, damage_town_data, by = "Town", all = TRUE)
-
-town_data <- town_data |>
-  rename(town = Town)
-
-##combine census, damage, and voting data
-finaldata <- merge(CT_votes, town_data, by = "town", all = TRUE)
-finaldata <- merge(finaldata, ct_incomes, by = "town", all = TRUE)
-
-##cleaning numeric income values
-finaldata$Per.capita.income <- as.numeric(gsub("[\\$,]", "", finaldata$Per.capita.income))
-finaldata$Median.household.income <- as.numeric(gsub("[\\$,]", "", finaldata$Median.household.income))
-finaldata$Population <- gsub(",", "", finaldata$Population, fixed = TRUE)
-finaldata$Population <- as.numeric(finaldata$Population)
-
-##row for percentage white non-hispanic, storm cindition column
-finaldata <- finaldata |>
-  mutate(pct_white = CVAP_WHT10/CVAP_TOT10, na.rm = TRUE) |>
-  mutate(Total.Damaged..any.type. = log(Total.Damaged..any.type.)) |>
-  mutate(Total.Damaged..any.type. = if_else(is.na(Total.Damaged..any.type.), 0, Total.Damaged..any.type.)) |>
-  mutate(condition = if_else(Total.Damaged..any.type. == 0, "No Damage", "Damage")) |>
-  mutate(dem_raw_vote_swing = `2012_dem_votes` - `2008_dem_votes`) 
-
-View(finaldata)
-```
-
 #Tests
 ```{r}
 library(modelsummary)
@@ -370,6 +370,7 @@ dif_damage_numeric = (damaged_votes - no_damage_vote)
 dif_damage_numeric
 ```
 ```{r}
+library(kableExtra)
 ##one more graphic
 data <- data.frame(
   Measure = c(
